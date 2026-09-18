@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dubber Studio — Automated AI Video Dubbing & Lip-Sync</title>
+  <meta name="description" content="AI Video Dubbing Studio with visual face detection, vocal pitch gender classification, frame-accurate lip-sync, subtitle studio, and interactive script proofreading.">
+  
+  <!-- Google Fonts: Space Grotesk & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/static/style.css?v=2.7.0">
+</head>
+<body class="dark-theme">
+  <!-- Glowing Background Orbs -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <!-- Main Navigation Header -->
+  <header class="app-header">
+    <div class="header-container" style="display: flex; justify-content: space-between; align-items: center; max-width: 1280px; margin: 0 auto; padding: 0 2rem;">
+      <div class="logo-group" style="display: flex; align-items: center; gap: 0.85rem;">
+        <div class="logo-icon-wrapper" style="width: 42px; height: 42px; min-width: 42px; min-height: 42px; border-radius: 12px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(99, 102, 241, 0.5); flex-shrink: 0;">
+          <svg class="logo-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 22px; height: 22px; max-width: 22px; max-height: 22px; color: #ffffff; display: block;">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="22"></line>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <h1 style="font-size: 1.35rem; font-weight: 700; color: #ffffff; margin: 0; line-height: 1.1; display: flex; align-items: baseline; gap: 0.25rem;">Dubber <span class="gradient-text">Studio</span></h1>
+          <span class="version-tag" style="font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; background: linear-gradient(90deg, #6366f1, #d946ef); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block; margin-top: 0.15rem;">v2.5 Pro</span>
+        </div>
+      </div>
+
+      <nav class="nav-links" style="display: flex; align-items: center; gap: 0.35rem; background: rgba(255, 255, 255, 0.04); padding: 0.3rem 0.5rem; border-radius: 9999px; border: 1px solid rgba(255, 255, 255, 0.08);">
+        <a href="#dubbingSection" class="nav-link active">Studio</a>
+        <a href="#showcaseSection" class="nav-link">Player</a>
+        <a href="#segmentsSection" class="nav-link">Transcript</a>
+        <a href="#gallerySection" class="nav-link">Library</a>
+      </nav>
+
+      <div class="header-status" style="display: inline-flex; align-items: center; gap: 0.55rem; padding: 0.4rem 0.95rem; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 9999px; font-size: 0.82rem; font-weight: 500; color: #34d399;">
+        <span class="status-indicator online" style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981; display: inline-block;"></span>
+        <span class="status-text">AI Multimodal Core Online</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-content">
+    
+    <!-- Hero Section -->
+    <section class="hero-section" id="dubbingSection">
+      <div class="hero-tag">Automated Neural Video Translation & Lip-Sync</div>
+      <h2 class="hero-title">Dub Any Video with <span class="gradient-text">Perfect Lip-Sync</span></h2>
+      <p class="hero-subtitle">
+        Visual face gender detection (Boy = Male Voice, Girl = Female Voice), Whisper AI transcription, frame-accurate lip synchronization, and dual-language subtitles.
+      </p>
+
+      <!-- Input Form Card -->
+      <div class="glass-card input-card">
+        <form id="dubForm" class="dub-form">
+
+          <!-- Language Bridge Bar (Original Language -> Target Language) -->
+          <div class="language-bridge-card">
+            <div class="lang-selector-box">
+              <div class="lang-pill-header">
+                <span class="lang-icon">🎙️</span>
+                <span class="lang-title">Original (Source) Language</span>
+              </div>
+              <select id="sourceLangSelect" class="styled-select lang-dropdown">
+                <option value="auto" selected>✨ Auto-Detect Language</option>
+                <optgroup label="🇮🇳 Indian Languages">
+                  <option value="te">Telugu (తెలుగు)</option>
+                  <option value="hi">Hindi (हिन्दी)</option>
+                  <option value="ta">Tamil (தமிழ்)</option>
+                  <option value="kn">Kannada (ಕನ್ನಡ)</option>
+                  <option value="ml">Malayalam (മലയാളം)</option>
+                  <option value="mr">Marathi (मराठी)</option>
+                  <option value="bn">Bengali (বাংলা)</option>
+                  <option value="gu">Gujarati (ગુજરાતી)</option>
+                  <option value="ur">Urdu (اردو)</option>
+                  <option value="en-IN">English (India)</option>
+                </optgroup>
+                <optgroup label="🌍 Global Languages">
+                  <option value="en">English (US)</option>
+                  <option value="en-GB">English (UK)</option>
+                  <option value="es">Spanish (Español)</option>
+                  <option value="fr">French (Français)</option>
+                  <option value="de">German (Deutsch)</option>
+                  <option value="ja">Japanese (日本語)</option>
+                  <option value="ko">Korean (한국어)</option>
+                  <option value="zh">Chinese (Mandarin)</option>
+                  <option value="ar">Arabic (العربية)</option>
+                  <option value="pt">Portuguese (Português)</option>
+                  <option value="ru">Russian (Русский)</option>
+                  <option value="it">Italian (Italiano)</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div class="swap-lang-container">
+              <button type="button" id="swapLangBtn" class="swap-lang-btn" title="Swap Source and Target Languages">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4"></path>
+                </svg>
+              </button>
+              <div id="langDirectionBadge" class="lang-direction-pill">Auto ➔ English</div>
+            </div>
+
+            <div class="lang-selector-box">
+              <div class="lang-pill-header">
+                <span class="lang-icon">🌐</span>
+                <span class="lang-title">Target Dubbing Language</span>
+              </div>
+              <select id="targetLangSelect" class="styled-select lang-dropdown">
+                <!-- Populated dynamically via /api/languages -->
+                <option value="en" selected>English (US)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Video URL / Path Input Group -->
+          <div class="input-group">
+            <div class="input-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+              </svg>
+            </div>
+            <input 
+              type="text" 
+              id="videoUrlInput" 
+              name="url" 
+              placeholder="Paste YouTube URL, YouTube Shorts link, or local video path..." 
+              required
+              autocomplete="off"
+            />
+            <button type="button" id="pasteBtn" class="btn-icon" title="Paste from clipboard">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+              </svg>
+              <span>Paste</span>
+            </button>
+            <button type="submit" id="startDubBtn" class="btn-primary glow-btn">
+              <span class="btn-text">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                Dub Video
+              </span>
+              <span class="btn-spinner hidden"></span>
+            </button>
+          </div>
+
+          <!-- Quick Presets -->
+          <div class="quick-presets">
+            <span class="presets-label">Quick Demos:</span>
+            <button type="button" class="preset-pill" data-url="https://youtube.com/shorts/4TpxqPlYqeE?si=RDNG87fULAjDEWuY" data-lang="en">
+              🔥 Telugu Short (4TpxqPlYqeE)
+            </button>
+            <button type="button" class="preset-pill" data-url="https://www.youtube.com/watch?v=GnNUFPdEnts" data-lang="en">
+              🌍 French Doc (GnNUFPdEnts)
+            </button>
+            <button type="button" class="preset-pill" data-url="output/dialogue_dubbed_multispeaker.mp4" data-lang="en">
+              👥 Multi-Speaker Dialogue
+            </button>
+          </div>
+
+          <!-- Configuration Toggle Drawer -->
+          <div class="config-drawer-wrapper">
+            <button type="button" id="toggleConfigBtn" class="config-drawer-toggle" onclick="toggleStudioConfig()">
+              <div class="toggle-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                <span>Studio Configuration (Lip-Sync, Subtitles, Voices & Proofreading)</span>
+              </div>
+              <div class="toggle-arrow" id="configToggleArrow">▼</div>
+            </button>
+
+            <!-- Expanded Config Panel with Modern Tabs -->
+            <div id="configPanel" class="config-panel">
+              <div class="studio-tabs-bar">
+                <button type="button" class="studio-tab-btn active" data-tab="tab-voices" onclick="switchStudioTab('tab-voices', this)">🗣️ Speaker Voices</button>
+                <button type="button" class="studio-tab-btn" data-tab="tab-lipsync" onclick="switchStudioTab('tab-lipsync', this)">👄 Lip-Sync Engine</button>
+                <button type="button" class="studio-tab-btn" data-tab="tab-subtitles" onclick="switchStudioTab('tab-subtitles', this)">💬 Subtitle Studio</button>
+                <button type="button" class="studio-tab-btn" data-tab="tab-proofread" onclick="switchStudioTab('tab-proofread', this)">📝 Script Proofread</button>
+                <button type="button" class="studio-tab-btn" data-tab="tab-audio" onclick="switchStudioTab('tab-audio', this)">🎛️ Audio Mixing</button>
+              </div>
+
+              <!-- Tab 1: Speaker Voices -->
+              <div id="tab-voices" class="tab-content active">
+                <div class="config-grid">
+                  <div class="config-group span-2">
+                    <label class="config-label" for="speakerModeSelect">
+                      <span class="badge badge-accent">🎯 Speaker Matching & Person Consistency</span>
+                      Guarantees audio matches the person on screen without random flipping
+                    </label>
+                    <select id="speakerModeSelect" class="styled-select">
+                      <option value="auto" selected>🎯 Auto-Match Person (Recommended — Locks consistent voice to the person)</option>
+                      <option value="male_only">👦 Always Male (Force 100% Boy / Man Voice)</option>
+                      <option value="female_only">👧 Always Female (Force 100% Girl / Woman Voice)</option>
+                      <option value="multi_speaker">👥 Multi-Speaker Dialogue (Alternating conversation turns)</option>
+                    </select>
+                  </div>
+
+                  <div class="config-group span-2">
+                    <div class="toggle-switch-wrapper">
+                      <div>
+                        <div class="config-label">Visual Face & Vocal Pitch Gender Analysis</div>
+                        <div class="label-hint">Vision AI detects face on screen: 👦 Boy = Male Audio, 👧 Girl = Female Audio</div>
+                      </div>
+                      <label class="switch">
+                        <input type="checkbox" id="autoGenderToggle" checked>
+                        <span class="slider round"></span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="config-group" id="maleVoiceGroup">
+                    <label class="config-label" for="maleVoiceSelect">
+                      <span class="badge badge-male">♂ Male (Boy) Voice</span>
+                      Assigned to male speakers
+                    </label>
+                    <select id="maleVoiceSelect" class="styled-select">
+                      <option value="en-US-ChristopherNeural" selected>en-US-ChristopherNeural (American Male)</option>
+                    </select>
+                  </div>
+
+                  <div class="config-group" id="femaleVoiceGroup">
+                    <label class="config-label" for="femaleVoiceSelect">
+                      <span class="badge badge-female">♀ Female (Girl) Voice</span>
+                      Assigned to female speakers
+                    </label>
+                    <select id="femaleVoiceSelect" class="styled-select">
+                      <option value="en-US-JennyNeural" selected>en-US-JennyNeural (American Female)</option>
+                    </select>
+                  </div>
+
+                  <div class="config-group hidden" id="singleVoiceGroup">
+                    <label class="config-label" for="singleVoiceSelect">
+                      Single Static Voice
+                      <span class="label-hint">Applied to all speakers</span>
+                    </label>
+                    <select id="singleVoiceSelect" class="styled-select">
+                      <option value="en-US-JennyNeural">en-US-JennyNeural (Female)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tab 2: Lip-Sync Engine -->
+              <div id="tab-lipsync" class="tab-content">
+                <div class="config-grid">
+                  <div class="config-group span-2">
+                    <label class="config-label" for="lipSyncModeSelect">
+                      Lip-Sync Timing Synchronization Mode
+                      <span class="label-hint">Controls how synthesized speech aligns with mouth movements</span>
+                    </label>
+                    <select id="lipSyncModeSelect" class="styled-select">
+                      <option value="visual_adaptive" selected>⚡ Visual Adaptive (Zero-Drift) — Matches visual mouth movement cadence (0.85x–2.20x)</option>
+                      <option value="strict_lock">🔒 Strict Mouth-Lock — Clamps audio strictly to speaker mouth-opening window</option>
+                      <option value="natural">🎵 Natural Conversational Cadence — Standard pacing with smooth fade</option>
+                    </select>
+                  </div>
+
+                  <div class="feature-info-card span-2">
+                    <div class="info-icon">✨</div>
+                    <div class="info-text">
+                      <strong>Automatic Lip-Sync Optimizations Active:</strong>
+                      Leading silence is stripped for instant mouth opening speech (0ms delay), trailing silence is trimmed, and strict boundary clamping guarantees zero speech collisions.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tab 3: Subtitle Studio -->
+              <div id="tab-subtitles" class="tab-content">
+                <div class="config-grid">
+                  <div class="config-group span-2">
+                    <label class="config-label" for="subtitleModeSelect">
+                      Subtitle Format & Delivery
+                      <span class="label-hint">Select how subtitles are formatted and embedded</span>
+                    </label>
+                    <select id="subtitleModeSelect" class="styled-select">
+                      <option value="soft" selected>📺 Soft Subtitles (Embedded CC Stream — Switchable on/off)</option>
+                      <option value="burn">🔥 Burn-in Hardsubs (Cinema Style — Styled Yellow/White + Outline)</option>
+                      <option value="dual">🌐 Dual-Language (Bilingual Stacked — Original + Dubbed)</option>
+                      <option value="none">❌ No Subtitles</option>
+                    </select>
+                  </div>
+
+                  <div class="config-group span-2">
+                    <div class="toggle-switch-wrapper">
+                      <div>
+                        <div class="config-label">Export Subtitle Files</div>
+                        <div class="label-hint">Automatically saves .SRT, .VTT, and Bilingual Subtitle files for instant download</div>
+                      </div>
+                      <label class="switch">
+                        <input type="checkbox" id="embedSubtitlesToggle" checked>
+                        <span class="slider round"></span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tab 4: Script Proofread -->
+              <div id="tab-proofread" class="tab-content">
+                <div class="config-grid">
+                  <div class="config-group span-2">
+                    <div class="toggle-switch-wrapper">
+                      <div>
+                        <div class="config-label">Interactive Script Proofreader & Pacing Studio</div>
+                        <div class="label-hint">Allows you to review, edit translated dialogue, reassign Boy/Girl voices, or auto-optimize syllable pacing</div>
+                      </div>
+                      <button type="button" id="openProofreadManualBtn" class="btn-ghost btn-sm">
+                        📝 Open Script Editor
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="feature-info-card span-2">
+                    <div class="info-icon">💡</div>
+                    <div class="info-text">
+                      <strong>AI Pacing Optimization:</strong> Trims unnecessary filler words so the translation fits the speaker's exact speaking time down to the millisecond!
+                    </div>
+                  </div>
+
+                  <!-- Live Pacing Test Bench -->
+                  <div class="config-group span-2 pacing-sandbox-group">
+                    <div class="pacing-sandbox-header">
+                      <span class="sandbox-badge">⚡ Live AI Pacing Test Bench</span>
+                      <span class="label-hint">Test how conversational filler words get trimmed to match speech duration</span>
+                    </div>
+                    <div class="pacing-sandbox-controls">
+                      <input type="text" id="pacingInputText" class="styled-input" placeholder="Enter wordy translated sentence..." value="Um actually you know we basically have to do all this work today">
+                      <div class="pacing-row">
+                        <label class="pacing-dur-label">Target Duration:
+                          <input type="number" id="pacingDurationInput" class="styled-input duration-input" value="1.5" step="0.1" min="0.5" max="10">s
+                        </label>
+                        <button type="button" id="btnTestPacing" class="btn-secondary btn-sm">⚡ Test AI Optimization</button>
+                      </div>
+                    </div>
+                    <div id="pacingResultBox" class="pacing-result-box hidden">
+                      <div class="pacing-result-label">Optimized Output:</div>
+                      <div id="pacingResultText" class="pacing-result-text"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tab 5: Audio Mixing & Advanced -->
+              <div id="tab-audio" class="tab-content">
+                <div class="config-grid">
+                  <div class="config-group">
+                    <div class="slider-header">
+                      <label class="config-label" for="mixOriginalSlider">Background Audio Retention</label>
+                      <span id="mixValBadge" class="val-badge">0% (Clean Dub)</span>
+                    </div>
+                    <input type="range" id="mixOriginalSlider" min="0" max="100" value="0" class="styled-slider">
+                    <div class="slider-ticks">
+                      <span>Clean Dub (0%)</span>
+                      <span>Subtle (15%)</span>
+                      <span>Loud (100%)</span>
+                    </div>
+                  </div>
+
+                  <div class="config-group">
+                    <label class="config-label" for="whisperModelSelect">
+                      Whisper AI Transcription Model
+                      <span class="label-hint">Accuracy vs processing speed</span>
+                    </label>
+                    <select id="whisperModelSelect" class="styled-select">
+                      <option value="small" selected>small — High Accuracy (Recommended)</option>
+                      <option value="base">base — Fast & Lightweight</option>
+                      <option value="tiny">tiny — Ultra Fast (Drafts)</option>
+                      <option value="medium">medium — Studio Grade</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Active Job Pipeline Stepper -->
+    <section id="pipelineSection" class="pipeline-section hidden">
+      <div class="section-header">
+        <div class="header-left">
+          <div class="live-dot pulse"></div>
+          <h3 class="section-title">Live Pipeline Execution</h3>
+          <span id="activeJobId" class="job-id-pill">Job: None</span>
+        </div>
+        <div class="header-right">
+          <span id="overallTimer" class="timer-pill">00:00</span>
+        </div>
+      </div>
+
+      <!-- 5 Step Cards -->
+      <div class="stepper-grid">
+        <div class="step-card" id="stepCard1">
+          <div class="step-header">
+            <div class="step-icon">📥</div>
+            <div class="step-number">Stage 1</div>
+            <span class="step-status-badge badge-pending">Pending</span>
+          </div>
+          <div class="step-title">Source Extraction</div>
+          <p class="step-desc" id="stepDesc1">Download video & extract 44.1kHz audio</p>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar1" style="width: 0%"></div>
+          </div>
+          <div class="step-footer">
+            <span class="step-stat" id="stepStat1">Waiting...</span>
+            <span class="step-pct" id="stepPct1">0%</span>
+          </div>
+        </div>
+
+        <div class="step-card" id="stepCard2">
+          <div class="step-header">
+            <div class="step-icon">🧠</div>
+            <div class="step-number">Stage 2</div>
+            <span class="step-status-badge badge-pending">Pending</span>
+          </div>
+          <div class="step-title">Whisper AI Translation</div>
+          <p class="step-desc" id="stepDesc2">Segment timestamps & native translation</p>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar2" style="width: 0%"></div>
+          </div>
+          <div class="step-footer">
+            <span class="step-stat" id="stepStat2">Waiting...</span>
+            <span class="step-pct" id="stepPct2">0%</span>
+          </div>
+        </div>
+
+        <div class="step-card" id="stepCard3">
+          <div class="step-header">
+            <div class="step-icon">🎙️</div>
+            <div class="step-number">Stage 3</div>
+            <span class="step-status-badge badge-pending">Pending</span>
+          </div>
+          <div class="step-title">Neural Speech Synthesis</div>
+          <p class="step-desc" id="stepDesc3">Edge TTS batch multi-speaker audio</p>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar3" style="width: 0%"></div>
+          </div>
+          <div class="step-footer">
+            <span class="step-stat" id="stepStat3">Waiting...</span>
+            <span class="step-pct" id="stepPct3">0%</span>
+          </div>
+        </div>
+
+        <div class="step-card" id="stepCard4">
+          <div class="step-header">
+            <div class="step-icon">⏱️</div>
+            <div class="step-number">Stage 4</div>
+            <span class="step-status-badge badge-pending">Pending</span>
+          </div>
+          <div class="step-title">Lip-Sync Alignment</div>
+          <p class="step-desc" id="stepDesc4">Silence strip, tempo stretch & zero drift</p>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar4" style="width: 0%"></div>
+          </div>
+          <div class="step-footer">
+            <span class="step-stat" id="stepStat4">Waiting...</span>
+            <span class="step-pct" id="stepPct4">0%</span>
+          </div>
+        </div>
+
+        <div class="step-card" id="stepCard5">
+          <div class="step-header">
+            <div class="step-icon">🎬</div>
+            <div class="step-number">Stage 5</div>
+            <span class="step-status-badge badge-pending">Pending</span>
+          </div>
+          <div class="step-title">Lossless Video Remux</div>
+          <p class="step-desc" id="stepDesc5">AAC audio remux & subtitle track muxing</p>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar5" style="width: 0%"></div>
+          </div>
+          <div class="step-footer">
+            <span class="step-stat" id="stepStat5">Waiting...</span>
+            <span class="step-pct" id="stepPct5">0%</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="pipelineErrorBanner" class="error-banner hidden">
+        <div class="error-icon">⚠️</div>
+        <div class="error-content">
+          <h4 id="errorTitle">Pipeline Error</h4>
+          <p id="errorDetails"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Completed Video Showcase Section -->
+    <section id="showcaseSection" class="showcase-section hidden">
+      <div class="section-header">
+        <div>
+          <h3 class="section-title">✨ Dubbed Video Ready</h3>
+          <p class="section-subtitle">Pristine dubbed voice track with accurate lip-sync and subtitles</p>
+        </div>
+        <div class="showcase-actions">
+          <a id="downloadVideoBtn" href="#" download class="btn-primary glow-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Download Video (MP4)
+          </a>
+          <a id="downloadSrtBtn" href="#" download class="btn-ghost">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            Subtitles (.SRT)
+          </a>
+          <a id="downloadVttBtn" href="#" download class="btn-ghost">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            Subtitles (.VTT)
+          </a>
+          <a id="downloadBilingualBtn" href="#" download class="btn-ghost hidden">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            Bilingual (.SRT)
+          </a>
+          <button type="button" id="openProofreadFromPlayerBtn" class="btn-ghost">
+            📝 Script Studio
+          </button>
+          <button type="button" id="deleteCurrentVideoBtn" class="btn-ghost btn-delete-danger" title="Delete this dubbed video">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 15px; height: 15px;">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+            Delete Video
+          </button>
+        </div>
+      </div>
+
+      <div class="showcase-grid">
+        <!-- Main HTML5 Video Player -->
+        <div class="glass-card video-player-card">
+          <div class="player-wrapper">
+            <video id="mainVideoPlayer" controls playsinline preload="metadata">
+              <track id="subtitlesTrack" kind="subtitles" srclang="en" label="English" default>
+              Your browser does not support HTML5 video playback.
+            </video>
+          </div>
+          <div class="video-info-bar">
+            <div id="playerVideoTitle" class="video-title">Dubbed Video</div>
+            <div id="playerVideoMeta" class="video-meta-tags"></div>
+          </div>
+        </div>
+
+        <!-- Performance Summary Card -->
+        <div class="glass-card summary-card">
+          <h4 class="card-subtitle">Dubbing & Lip-Sync Metrics</h4>
+          <div class="summary-metrics-grid" id="summaryMetricsGrid">
+            <div class="metric-item">
+              <span class="metric-label">Original Language</span>
+              <span class="metric-val" id="metricSourceLang">--</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">Target Language</span>
+              <span class="metric-val" id="metricLang">--</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">Speaker Demographics</span>
+              <span class="metric-val" id="metricSpeakers">--</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">Speech Segments</span>
+              <span class="metric-val" id="metricSegments">--</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">Processing Time</span>
+              <span class="metric-val highlight" id="metricTotalTime">--</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">Dubbing Efficiency</span>
+              <span class="metric-val highlight-green" id="metricEfficiency">--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Synced Subtitle Explorer -->
+      <div class="glass-card transcript-explorer-card">
+        <div class="explorer-header">
+          <div class="header-left">
+            <span class="explorer-icon">💬</span>
+            <h4 class="card-subtitle" style="margin-bottom: 0;">Interactive Subtitle Transcript</h4>
+            <span class="live-tag">Synced to Video</span>
+          </div>
+          <span class="explorer-hint">Click any line to jump to that timestamp</span>
+        </div>
+        <div id="syncedTranscriptList" class="synced-transcript-container">
+          <!-- Populated dynamically with interactive subtitle cards -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Speech Segments & Speaker Classification Table -->
+    <section id="segmentsSection" class="segments-section hidden">
+      <div class="section-header">
+        <div>
+          <h3 class="section-title">Speaker Classification Details</h3>
+          <p class="section-subtitle">Multimodal Visual Face & Pitch Analysis Breakdown</p>
+        </div>
+        <span class="section-badge" id="segmentCountBadge">0 Segments</span>
+      </div>
+
+      <div class="glass-card table-card">
+        <div class="table-responsive">
+          <table class="styled-table" id="segmentsTable">
+            <thead>
+              <tr>
+                <th style="width: 50px;">#</th>
+                <th style="width: 130px;">Timestamp</th>
+                <th style="width: 150px;">Speaker / Gender</th>
+                <th style="width: 140px;">Detection Source</th>
+                <th style="width: 110px;">Confidence</th>
+                <th>Original Script</th>
+                <th>Dubbed Translation</th>
+              </tr>
+            </thead>
+            <tbody id="segmentsTableBody">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Video Library -->
+    <section id="gallerySection" class="gallery-section">
+      <div class="section-header">
+        <div>
+          <h3 class="section-title">Video Library</h3>
+          <p class="section-subtitle">Previously dubbed videos in your output repository</p>
+        </div>
+        <button type="button" id="refreshGalleryBtn" class="btn-ghost" title="Refresh library">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+          Refresh
+        </button>
+      </div>
+
+      <div class="gallery-grid" id="galleryGrid">
+        <div class="loading-placeholder">Scanning output directory for dubbed videos...</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Interactive Script Proofreader Modal -->
+  <div id="proofreadModal" class="modal-overlay hidden">
+    <div class="modal-content glass-card proofread-modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-icon">📝</div>
+          <div>
+            <h3>Video Script Proofreader & Pacing Studio</h3>
+            <p class="modal-desc">Review and fine-tune translated lines, toggle Boy/Girl voices, or optimize syllable count for perfect lip-sync.</p>
+          </div>
+        </div>
+        <button type="button" id="closeProofreadBtn" class="modal-close-btn">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="proofread-toolbar">
+          <span id="proofreadCountBadge" class="badge">0 Segments</span>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button type="button" id="setAllMaleBtn" class="btn-ghost btn-sm" title="Set all segment voices to Male">
+              👦 All Male
+            </button>
+            <button type="button" id="setAllFemaleBtn" class="btn-ghost btn-sm" title="Set all segment voices to Female">
+              👧 All Female
+            </button>
+            <button type="button" id="autoOptimizeAllBtn" class="btn-ghost btn-sm">
+              ✨ Auto-Optimize All Pacing
+            </button>
+          </div>
+        </div>
+        <div id="proofreadList" class="proofread-segments-container">
+          <!-- Populated dynamically with editable segment cards -->
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" id="cancelProofreadBtn" class="btn-ghost">Close</button>
+        <button type="button" id="saveProofreadBtn" class="btn-ghost">
+          💾 Save Transcript
+        </button>
+        <button type="button" id="redubModalBtn" class="btn-primary glow-btn" style="background: linear-gradient(135deg, #10b981, #059669); border: none; display: inline-flex; align-items: center; gap: 8px;">
+          <span id="redubBtnText">⚡ Apply & Re-Dub Video</span>
+          <span id="redubBtnSpinner" class="spinner-small hidden" style="width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; display: inline-block; animation: spin 0.8s linear infinite;"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <p>Dubber Studio Pro &bull; Multimodal AI Video Dubbing with Faster-Whisper, Edge-TTS & FFmpeg</p>
+  </footer>
+
+  <script src="/static/app.js?v=2.8.0"></script>
+</body>
+</html>

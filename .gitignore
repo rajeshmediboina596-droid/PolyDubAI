@@ -1,0 +1,46 @@
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Large Model Weights (automatically downloaded on demand)
+models/
+*.bin
+*.pt
+*.onnx
+
+# Output & Generated Media Files (Large video/audio files)
+output/
+!output/.gitkeep
+output_benchmarks/
+scratch/
+*.mp4
+*.mp3
+*.wav
+*.aac
+*.jpg
+*.jpeg
+*.png
+test_tts.mp3
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+.tempmediaStorage/
+
+# Logs
+*.log
