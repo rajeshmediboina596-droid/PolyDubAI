@@ -42,5 +42,7 @@ test_tts.mp3
 Thumbs.db
 .tempmediaStorage/
 
-# Logs
+# Logs & Executables
 *.log
+cloudflared.exe
+*.exe
