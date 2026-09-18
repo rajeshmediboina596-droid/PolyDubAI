@@ -1,3 +1,13 @@
+---
+title: PolyDubAI
+emoji: 🎙️
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # PolyDubAI — AI-Powered Multilingual Video Dubbing with Voice Preservation and Lip Synchronization
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
