@@ -508,6 +508,13 @@ if os.path.exists(OUTPUT_DIR):
     app.mount("/output", StaticFiles(directory=OUTPUT_DIR), name="output")
 
 
+@app.get("/health")
+@app.get("/api/health")
+async def health_check():
+    """Health check endpoint for cloud deployments and monitors."""
+    return {"status": "ok", "app": "PolyDubAI", "version": "1.0.0"}
+
+
 @app.get("/")
 async def root():
     """Serve the single-page application."""
@@ -515,3 +522,4 @@ async def root():
     if os.path.isfile(index_file):
         return FileResponse(index_file)
     return HTMLResponse("<h2>Web frontend is initializing...</h2>")
+
