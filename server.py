@@ -515,6 +515,24 @@ async def health_check():
     return {"status": "ok", "app": "PolyDubAI", "version": "1.0.0"}
 
 
+@app.get("/style.css")
+async def get_root_css():
+    """Direct root CSS route."""
+    css_file = os.path.join(WEB_DIR, "style.css")
+    if os.path.isfile(css_file):
+        return FileResponse(css_file, media_type="text/css")
+    raise HTTPException(status_code=404, detail="CSS file not found")
+
+
+@app.get("/app.js")
+async def get_root_js():
+    """Direct root JavaScript route."""
+    js_file = os.path.join(WEB_DIR, "app.js")
+    if os.path.isfile(js_file):
+        return FileResponse(js_file, media_type="application/javascript")
+    raise HTTPException(status_code=404, detail="JS file not found")
+
+
 @app.get("/")
 async def root():
     """Serve the single-page application."""

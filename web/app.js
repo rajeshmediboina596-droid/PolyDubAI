@@ -1,3 +1,8 @@
+// Global Universal API Base for Hugging Face Spaces & Cloudflare Live Routing
+const API_BASE = (window.location.hostname.includes("hf.space") || window.location.hostname.includes("github.io") || window.location.protocol === "file:")
+  ? "https://once-remark-history-choose.trycloudflare.com"
+  : "";
+
 /**
  * Dubber Studio — Frontend Application Logic
  * Server-Sent Events (SSE) streaming, interactive UI, and HTML5 video player.
@@ -285,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!text) return;
       btnTestPacing.textContent = '⏳ Optimizing...';
       try {
-        const res = await fetch('/api/optimize_pacing', {
+        const res = await fetch(`${API_BASE}/api/optimize_pacing`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -428,7 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
    */
   async function loadLanguages() {
     try {
-      const res = await fetch('/api/languages');
+      const res = await fetch(`${API_BASE}/api/languages`);
       if (!res.ok) throw new Error('Failed to fetch languages');
       const data = await res.json();
       allLanguages = data.languages || [];
@@ -499,7 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
    */
   async function loadAvailableVoices() {
     try {
-      const res = await fetch('/api/voices');
+      const res = await fetch(`${API_BASE}/api/voices`);
       if (!res.ok) throw new Error('Failed to fetch voices');
       const data = await res.json();
       const voices = data.voices || [];
@@ -538,7 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
    */
   async function loadVideoGallery() {
     try {
-      const res = await fetch('/api/videos');
+      const res = await fetch(`${API_BASE}/api/videos`);
       if (!res.ok) throw new Error('Failed to fetch video gallery');
       const data = await res.json();
       renderGalleryGrid(data.videos || []);
@@ -619,7 +624,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!confirmed) return;
 
     try {
-      const res = await fetch(`/api/videos/${encodeURIComponent(cleanName)}`, {
+      const res = await fetch(`${API_BASE}/api/videos/${encodeURIComponent(cleanName)}`, {
         method: 'DELETE',
       });
       if (!res.ok) {
@@ -691,13 +696,20 @@ document.addEventListener('DOMContentLoaded', () => {
   /**
    * Load video and subtitles into HTML5 player.
    */
-  function loadVideoIntoPlayer(videoUrl, srtUrl, title, metaStr, vttUrl, bilingualSrtUrl) {
-    currentVideoUrl = videoUrl;
-    currentSrtUrl = srtUrl;
-    currentVttUrl = vttUrl;
-    currentBilingualSrtUrl = bilingualSrtUrl;
+  function formatMediaUrl(url) {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:') || url.startsWith('data:')) return url;
+    if (url.startsWith('/')) return `${API_BASE}${url}`;
+    return `${API_BASE}/${url}`;
+  }
 
-    mainVideoPlayer.src = videoUrl;
+  function loadVideoIntoPlayer(videoUrl, srtUrl, title, metaStr, vttUrl, bilingualSrtUrl) {
+    currentVideoUrl = formatMediaUrl(videoUrl);
+    currentSrtUrl = formatMediaUrl(srtUrl);
+    currentVttUrl = formatMediaUrl(vttUrl);
+    currentBilingualSrtUrl = formatMediaUrl(bilingualSrtUrl);
+
+    mainVideoPlayer.src = currentVideoUrl;
     playerVideoTitle.textContent = title;
 
     if (metaStr) {
@@ -706,22 +718,22 @@ document.addEventListener('DOMContentLoaded', () => {
       playerVideoMeta.innerHTML = '';
     }
 
-    downloadVideoBtn.href = videoUrl;
-    if (srtUrl) {
-      downloadSrtBtn.href = srtUrl;
+    downloadVideoBtn.href = currentVideoUrl;
+    if (currentSrtUrl) {
+      downloadSrtBtn.href = currentSrtUrl;
       downloadSrtBtn.classList.remove('hidden');
-      subtitlesTrack.src = srtUrl;
+      subtitlesTrack.src = currentSrtUrl;
     } else {
       downloadSrtBtn.classList.add('hidden');
     }
 
-    if (vttUrl && downloadVttBtn) {
-      downloadVttBtn.href = vttUrl;
+    if (currentVttUrl && downloadVttBtn) {
+      downloadVttBtn.href = currentVttUrl;
       downloadVttBtn.classList.remove('hidden');
     }
 
-    if (bilingualSrtUrl && downloadBilingualBtn) {
-      downloadBilingualBtn.href = bilingualSrtUrl;
+    if (currentBilingualSrtUrl && downloadBilingualBtn) {
+      downloadBilingualBtn.href = currentBilingualSrtUrl;
       downloadBilingualBtn.classList.remove('hidden');
     }
 
@@ -769,7 +781,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     try {
-      const res = await fetch('/api/dub', {
+      const res = await fetch(`${API_BASE}/api/dub`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -800,7 +812,7 @@ document.addEventListener('DOMContentLoaded', () => {
       currentEventSource.close();
     }
 
-    const streamUrl = `/api/dub/stream/${jobId}`;
+    const streamUrl = `${API_BASE}/api/dub/stream/${jobId}`;
     currentEventSource = new EventSource(streamUrl);
 
     currentEventSource.onmessage = (e) => {
@@ -821,7 +833,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       // Safety fallback check: verify if the job has finished on the server
       try {
-        const res = await fetch(`/api/dub/status/${jobId}`);
+        const res = await fetch(`${API_BASE}/api/dub/status/${jobId}`);
         if (res.ok) {
           const st = await res.json();
           if (st.status === 'finished' && st.latest_event) {
@@ -1140,7 +1152,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const slotDur = currentSegments[i].end - currentSegments[i].start;
 
         try {
-          const res = await fetch('/api/optimize_pacing', {
+          const res = await fetch(`${API_BASE}/api/optimize_pacing`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1174,7 +1186,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const seg = currentSegments[i];
       const slotDur = seg.end - seg.start;
       try {
-        const res = await fetch('/api/optimize_pacing', {
+        const res = await fetch(`${API_BASE}/api/optimize_pacing`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1229,7 +1241,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (redubBtnSpinner) redubBtnSpinner.classList.remove('hidden');
 
     try {
-      const res = await fetch('/api/redub', {
+      const res = await fetch(`${API_BASE}/api/redub`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
