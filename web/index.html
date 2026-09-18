@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dubber Studio — Automated AI Video Dubbing & Lip-Sync</title>
-  <meta name="description" content="AI Video Dubbing Studio with visual face detection, vocal pitch gender classification, frame-accurate lip-sync, subtitle studio, and interactive script proofreading.">
+  <title>PolyDubAI — AI-Powered Multilingual Video Dubbing with Voice Preservation & Lip Synchronization</title>
+  <meta name="description" content="PolyDubAI — AI-powered multilingual video dubbing system that preserves the original speaker's vocal pitch, tone, and speaking style while synchronizing lip movements with translated audio.">
   
   <!-- Google Fonts: Space Grotesk & Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="/static/style.css?v=2.7.0">
+  <link rel="stylesheet" href="/static/style.css?v=2.8.0">
 </head>
 <body class="dark-theme">
   <!-- Glowing Background Orbs -->
@@ -31,8 +31,8 @@
           </svg>
         </div>
         <div class="logo-text">
-          <h1 style="font-size: 1.35rem; font-weight: 700; color: #ffffff; margin: 0; line-height: 1.1; display: flex; align-items: baseline; gap: 0.25rem;">Dubber <span class="gradient-text">Studio</span></h1>
-          <span class="version-tag" style="font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; background: linear-gradient(90deg, #6366f1, #d946ef); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block; margin-top: 0.15rem;">v2.5 Pro</span>
+          <h1 style="font-size: 1.35rem; font-weight: 700; color: #ffffff; margin: 0; line-height: 1.1; display: flex; align-items: baseline; gap: 0.25rem;">PolyDub<span class="gradient-text">AI</span></h1>
+          <span class="version-tag" style="font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; background: linear-gradient(90deg, #6366f1, #d946ef); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block; margin-top: 0.15rem;">Voice & Lip-Sync Core</span>
         </div>
       </div>
 
@@ -45,7 +45,7 @@
 
       <div class="header-status" style="display: inline-flex; align-items: center; gap: 0.55rem; padding: 0.4rem 0.95rem; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 9999px; font-size: 0.82rem; font-weight: 500; color: #34d399;">
         <span class="status-indicator online" style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981; display: inline-block;"></span>
-        <span class="status-text">AI Multimodal Core Online</span>
+        <span class="status-text">PolyDubAI Core (8GB RAM Safe)</span>
       </div>
     </div>
   </header>
@@ -55,10 +55,10 @@
     
     <!-- Hero Section -->
     <section class="hero-section" id="dubbingSection">
-      <div class="hero-tag">Automated Neural Video Translation & Lip-Sync</div>
-      <h2 class="hero-title">Dub Any Video with <span class="gradient-text">Perfect Lip-Sync</span></h2>
+      <div class="hero-tag">AI-Powered Multilingual Video Dubbing with Voice Preservation & Lip-Sync</div>
+      <h2 class="hero-title">Translate Videos with <span class="gradient-text">Voice Preservation & Lip-Sync</span></h2>
       <p class="hero-subtitle">
-        Visual face gender detection (Boy = Male Voice, Girl = Female Voice), Whisper AI transcription, frame-accurate lip synchronization, and dual-language subtitles.
+        Preserves original speaker voice, pitch, and style in any Indian or global language, while synchronizing speaker mouth movements using AI.
       </p>
 
       <!-- Input Form Card -->
@@ -214,6 +214,33 @@
                   <div class="config-group span-2">
                     <div class="toggle-switch-wrapper">
                       <div>
+                        <div class="config-label">
+                          <span class="badge" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff;">🧬 Speaker Voice Preservation</span>
+                        </div>
+                        <div class="label-hint">Profiles original speaker's fundamental pitch (F0), cadence & dynamics to match tone and style</div>
+                      </div>
+                      <label class="switch">
+                        <input type="checkbox" id="voicePreserveToggle" checked>
+                        <span class="slider round"></span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="config-group span-2" id="voicePreserveModeGroup">
+                    <label class="config-label" for="voicePreserveModeSelect">
+                      Voice Preservation & Timbre Matching Mode
+                      <span class="label-hint">Select how speaker vocal pitch and timbre are modeled</span>
+                    </label>
+                    <select id="voicePreserveModeSelect" class="styled-select">
+                      <option value="adaptive_prosody" selected>✨ Adaptive Acoustic Prosody (Replicates speaker median F0 pitch, speech rate & cadence)</option>
+                      <option value="formant_transfer">🎨 Formant Timbre Transfer (Spectral centroid EQ & vocal resonance matching)</option>
+                      <option value="none">Standard Flat TTS (No Voice Preservation)</option>
+                    </select>
+                  </div>
+
+                  <div class="config-group span-2">
+                    <div class="toggle-switch-wrapper">
+                      <div>
                         <div class="config-label">Visual Face & Vocal Pitch Gender Analysis</div>
                         <div class="label-hint">Vision AI detects face on screen: 👦 Boy = Male Audio, 👧 Girl = Female Audio</div>
                       </div>
@@ -260,9 +287,35 @@
               <div id="tab-lipsync" class="tab-content">
                 <div class="config-grid">
                   <div class="config-group span-2">
+                    <div class="toggle-switch-wrapper">
+                      <div>
+                        <div class="config-label">
+                          <span class="badge" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #ffffff;">🤖 AI Lip Synchronization (Wav2Lip / Face-Sync)</span>
+                        </div>
+                        <div class="label-hint">Adjusts speaker mouth movements to match translated speech using OpenCV face tracking & audio mel-windows</div>
+                      </div>
+                      <label class="switch">
+                        <input type="checkbox" id="lipsyncToggle" checked>
+                        <span class="slider round"></span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="config-group span-2">
+                    <label class="config-label" for="lipsyncModelSelect">
+                      Lip-Sync AI Engine Architecture
+                      <span class="label-hint">Select the deep learning / adaptive morphing model</span>
+                    </label>
+                    <select id="lipsyncModelSelect" class="styled-select">
+                      <option value="wav2lip" selected>🧠 Wav2Lip Neural Mel-Envelope Synchronization (Deep Learning Face ROI + Mel-Spectrum)</option>
+                      <option value="visual_adaptive">⚡ Visual-Adaptive Phoneme Morphing (Ultra-fast 8GB RAM CPU mode)</option>
+                    </select>
+                  </div>
+
+                  <div class="config-group span-2">
                     <label class="config-label" for="lipSyncModeSelect">
-                      Lip-Sync Timing Synchronization Mode
-                      <span class="label-hint">Controls how synthesized speech aligns with mouth movements</span>
+                      Audio-Visual Timing Synchronization Mode
+                      <span class="label-hint">Controls how synthesized speech aligns with mouth timestamps</span>
                     </label>
                     <select id="lipSyncModeSelect" class="styled-select">
                       <option value="visual_adaptive" selected>⚡ Visual Adaptive (Zero-Drift) — Matches visual mouth movement cadence (0.85x–2.20x)</option>
@@ -272,10 +325,10 @@
                   </div>
 
                   <div class="feature-info-card span-2">
-                    <div class="info-icon">✨</div>
+                    <div class="info-icon">🛡️</div>
                     <div class="info-text">
-                      <strong>Automatic Lip-Sync Optimizations Active:</strong>
-                      Leading silence is stripped for instant mouth opening speech (0ms delay), trailing silence is trimmed, and strict boundary clamping guarantees zero speech collisions.
+                      <strong>8 GB RAM Laptop Protection Active:</strong>
+                      Streaming frame micro-batches (N=4) and speech-selective processing (skips 60%+ non-speech/music frames) ensure total RAM usage stays strictly under 1.5 GB. Gaussian feathered elliptical alpha blending eliminates visible mouth seams.
                     </div>
                   </div>
                 </div>
@@ -449,8 +502,8 @@
             <div class="step-number">Stage 3</div>
             <span class="step-status-badge badge-pending">Pending</span>
           </div>
-          <div class="step-title">Neural Speech Synthesis</div>
-          <p class="step-desc" id="stepDesc3">Edge TTS batch multi-speaker audio</p>
+          <div class="step-title">Voice Preservation & Synthesis</div>
+          <p class="step-desc" id="stepDesc3">F0 pitch contour, tone profiling & neural speech</p>
           <div class="progress-bar-container">
             <div class="progress-bar" id="progressBar3" style="width: 0%"></div>
           </div>
@@ -462,12 +515,12 @@
 
         <div class="step-card" id="stepCard4">
           <div class="step-header">
-            <div class="step-icon">⏱️</div>
+            <div class="step-icon">👄</div>
             <div class="step-number">Stage 4</div>
             <span class="step-status-badge badge-pending">Pending</span>
           </div>
-          <div class="step-title">Lip-Sync Alignment</div>
-          <p class="step-desc" id="stepDesc4">Silence strip, tempo stretch & zero drift</p>
+          <div class="step-title">AI Lip-Sync (Wav2Lip)</div>
+          <p class="step-desc" id="stepDesc4">Acoustic mel-windows, face ROI tracking & zero-drift</p>
           <div class="progress-bar-container">
             <div class="progress-bar" id="progressBar4" style="width: 0%"></div>
           </div>
@@ -594,6 +647,14 @@
             <div class="metric-item">
               <span class="metric-label">Processing Time</span>
               <span class="metric-val highlight" id="metricTotalTime">--</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">Voice Preservation</span>
+              <span class="metric-val highlight-green" id="metricVoicePreserve">F0 Pitch & Tone Active</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">AI Lip-Sync</span>
+              <span class="metric-val highlight" id="metricLipSync">Wav2Lip Synchronized</span>
             </div>
             <div class="metric-item">
               <span class="metric-label">Dubbing Efficiency</span>

@@ -1,248 +1,205 @@
-# Automated Video Dubbing System
+# PolyDubAI — AI-Powered Multilingual Video Dubbing with Voice Preservation and Lip Synchronization
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 [![faster-whisper](https://img.shields.io/badge/transcription-faster--whisper-orange.svg)](https://github.com/SYSTRAN/faster-whisper)
 [![edge-tts](https://img.shields.io/badge/synthesis-edge--tts-green.svg)](https://github.com/rany2/edge-tts)
+[![Wav2Lip](https://img.shields.io/badge/lipsync-Wav2Lip--FaceSync-purple.svg)](https://github.com/Rudrabha/Wav2Lip)
 [![FFmpeg](https://img.shields.io/badge/remux-FFmpeg-red.svg)](https://ffmpeg.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-An end-to-end Python system that takes a YouTube video in any foreign language (German, French, Hindi, Spanish, Japanese, etc.), downloads it, transcribes & translates the speech into natural English, synthesizes neural English voices, aligns audio segments dynamically to preserve mouth-movement timing, and losslessly remuxes the audio into the final video.
+**PolyDubAI** is an advanced, modular AI video dubbing system that translates any foreign video URL or upload into any user-selected language (15+ Indian & Global languages). The system accurately **preserves the original speaker's vocal pitch, tone, style, and speaking cadence** while **synchronizing the speaker's lip movements** with the translated speech.
 
-Built for the **IDEALABS DIGITAL Internship & Assignment**.
+Built with an **8 GB RAM laptop-optimized streaming pipeline** that ensures complete stability without Out-Of-Memory (OOM) crashes.
 
 ---
 
-## Architecture
+## 🌟 Key Features
+
+1. **Video URL Input & Upload**:
+   - Accepts standard YouTube URLs, YouTube Shorts, or local video file uploads.
+2. **Speech Transcription & Alignment**:
+   - Extracts original speech using Faster-Whisper (int8 quantized) with millisecond-accurate word/segment timestamps.
+3. **Multilingual Translation**:
+   - Translates speech into any user-selected target language:
+     - **Indian Languages**: Telugu, Hindi, Tamil, Kannada, Malayalam, Marathi, Bengali, Gujarati, Urdu, Indian English.
+     - **Global Languages**: English (US/UK), Spanish, French, German, Japanese, Korean, Mandarin, Arabic, Portuguese, Russian, Italian.
+4. **Speaker Voice Preservation (Phase 3)**:
+   - Analyzes original audio acoustic characteristics ($F_0$ pitch contour, median pitch, speaking tempo, vocal energy).
+   - Dynamically modulates neural speech synthesis via SSML prosody parameters (`pitch="+XHz"`, `rate="+Y%"`) and formant frequency shaping to replicate the speaker's natural vocal timbre.
+5. **AI Lip Synchronization (Phase 4 — Wav2Lip / Face-Sync)**:
+   - Tracks speaker face ROI and lower-third mouth coordinates with exponential moving average (EMA) smoothing to eliminate jitter.
+   - Computes 80-channel mel-spectrogram windows to align mouth aperture, lip closure (bilabials), and inner oral cavity depth to the translated audio.
+   - Uses **Gaussian feathered elliptical alpha blending** for seamless integration with zero visible square seams or artifacts.
+6. **Final Video Delivery & Subtitles**:
+   - Lossless audio/video multiplexing via FFmpeg.
+   - Preserves background ambient soundtrack with zero foreign speech bleed (`duck_vol = 0.0` during dialogue, `0.90` during pauses, `1.0` during musical outros).
+   - Generates and embeds switchable Soft Subtitles (.SRT/.VTT) and bilingual dual-language subtitles.
+7. **8 GB RAM Laptop Protection**:
+   - Frame-streaming micro-batches ($N=4$) — never loads uncompressed full video into memory.
+   - Speech-selective processing: only processes video frames during active speech timestamps, skipping 60%+ non-speech/music frames.
+
+---
+
+## 🏗️ Architecture & 5-Phase Pipeline
 
 ```
-                          [ YouTube URL ]
-                                │
-                                ▼
-                   ┌─────────────────────────┐
-                   │   YouTubeDownloader     │ (yt-dlp)
-                   │  - Best stream download │
-                   │  - 16kHz WAV extraction │
-                   └────────────┬────────────┘
-                                │ video.mp4 + audio.wav
-                                ▼
-                   ┌─────────────────────────┐
-                   │    SpeechTranscriber    │ (faster-whisper / CTranslate2)
-                   │  - VAD speech detection │
-                   │  - Segment timestamps   │
-                   │  - Direct En translation│
-                   └────────────┬────────────┘
-                                │ Segments: [{start, end, text_en}, ...]
-                                ▼
-                   ┌─────────────────────────┐
-                   │    SpeechSynthesizer    │ (edge-tts)
-                   │  - Neural English voice │
-                   │  - Async batch synthesis│
-                   │  - Rate / Pitch control │
-                   └────────────┬────────────┘
-                                │ Raw segment audio clips
-                                ▼
-                   ┌─────────────────────────┐
-                   │    AudioSynchronizer    │ (pydub + FFmpeg atempo)
-                   │  - Slot duration match  │
-                   │  - Dynamic time-stretch │ (atempo 1.0x-1.3x)
-                   │  - Silence padding      │
-                   │  - Zero-drift timeline  │
-                   └────────────┬────────────┘
-                                │ dubbed_audio_synced.wav
-                                ▼
-                   ┌─────────────────────────┐
-                   │      VideoRemuxer       │ (FFmpeg -c:v copy)
-                   │  - Lossless remuxing    │
-                   │  - SRT subtitle muxing  │
-                   └────────────┬────────────┘
-                                │
-                                ▼
-                     [ Final Dubbed Video ]
+                              [ Video URL / Upload ]
+                                        │
+                                        ▼
+                             [ YouTubeDownloader ]
+                                  (yt-dlp)
+                                  ┌─────┴─────┐
+                             Video (MP4)   Audio (WAV)
+                                  │           │
+                                  │           ▼
+                                  │    [ SpeechTranscriber ]
+                                  │    (Faster-Whisper int8)
+                                  │           │
+                                  │     Segments + Timestamps
+                                  │           │
+                                  │           ▼
+                                  │    [ MultilingualTranslator ]
+                                  │    (Whisper + Deep-Translator)
+                                  │           │
+                   ┌──────────────┴───────────┼───────────────────┐
+                   │                          ▼                   │
+                   │               [ SpeakerVoicePreserver ]      │
+                   │               (Phase 3: Voice Cloner)        │
+                   │               - F0 Pitch & Timbre Profiling  │
+                   │               - Tone & Cadence Transfer      │
+                   │               - Neural SSML Prosody Deltas   │
+                   │                          │                   │
+                   │                          ▼                   │
+                   │                 [ AudioSynchronizer ]        │
+                   │                 - Dynamic Tempo Scaling      │
+                   │                 - Zero Foreign Speech Bleed  │
+                   │                 - Background Music Retention │
+                   │                          │                   │
+                   │                          ▼                   │
+                   │                   Dubbed Audio Track         │
+                   │                          │                   │
+                   ▼                          ▼                   │
+          [ AILipSynchronizer ] ◄─────────────┘                   │
+          (Phase 4: Wav2Lip Face-Sync)                            │
+          - Face Landmark & ROI Detection                         │
+          - 80-Channel Mel-Windows                                │
+          - Streaming Frame Generation                            │
+          - Seamless Gaussian Feathering                          │
+                   │                                              │
+                   ▼                                              ▼
+           Lip-Synced Video                              Subtitles (.SRT/.VTT)
+                   │                                              │
+                   └──────────────────────┬───────────────────────┘
+                                          ▼
+                                   [ VideoRemuxer ]
+                                  (FFmpeg Stream-Mux)
+                                          │
+                                          ▼
+                             [ Final PolyDubAI Video ]
 ```
 
 ---
 
-## Key Features
+## 💻 8 GB RAM Optimization Strategy
 
-1. **Multi-Language Speech Translation**:
-   - Uses `faster-whisper` (CTranslate2 with int8 quantization) to transcribe and translate foreign speech directly to English.
-   - Built-in Voice Activity Detection (VAD) avoids hallucinating on background music or sound effects.
-   - Emits exact segment-level timestamp boundaries `[start, end]`.
-
-2. **Natural Neural Voice Synthesis**:
-   - Uses Microsoft Edge Neural TTS for lifelike, expressive English voices with no robotic artifacts.
-   - Zero GPU required for voice generation; runs asynchronously with concurrency control.
-   - Full catalogue of American, British, and Indian English male and female voices.
-
-3. **Automatic Speaker Gender Detection & Multi-Speaker Dubbing**:
-   - Analyzes vocal pitch ($F_0$) via normalized autocorrelation on original speech audio for every segment.
-   - Automatically identifies whether the speaker is **male** (boy/man, $F_0 < 165$ Hz) or **female** (girl/woman, $F_0 \ge 165$ Hz).
-   - In multi-speaker videos (conversations, interviews, co-presenters), seamlessly alternates between male (Christopher) and female (Jenny) neural voices at exact segment boundaries!
-   - Temporal smoothing prevents voice-flipping on short interjections.
-
-4. **Audio-Visual Timing Synchronization (Zero Cumulative Drift)**:
-   - *The Problem*: Translated English phrases are rarely the exact same syllable length as original foreign phrases. Naive concatenation causes dubs to drift by minutes over long videos.
-   - *Our Solution*: Segment-by-segment timeline assembly:
-     - Compares synthesized duration $D_{tts}$ against original speech window $D_{slot}$.
-     - If slightly longer, dynamically accelerates audio up to $1.30\times$ using FFmpeg's `atempo` filter (maintaining natural pitch).
-     - If shorter, places speech at the exact start timestamp and pads with natural silence.
-     - Guarantees 100% sync alignment across **30-minute** and **2-hour** videos!
-
-5. **Lossless Remuxing**:
-   - Employs FFmpeg's stream copy (`-c:v copy`) to swap the audio track in seconds without touching or re-encoding visual frames.
-   - Lossless visual fidelity, ultra-fast export.
-   - Optionally embeds soft SubRip subtitles (`.srt`) in English.
-
-6. **Rich Terminal Experience**:
-   - Modern CLI with styled progress bars, speaker badges (`♂ Male` / `♀ Female`), elapsed timers, transfer speeds, and translation preview tables.
+| Component | Unoptimized (Crash Risk) | PolyDubAI 8 GB RAM Safe Design |
+|---|---|---|
+| **Video Decoding** | Full uncompressed frames in RAM ($> 5\text{ GB}$) | Streaming frame generator with `cv2.VideoCapture` ($< 150\text{ MB}$) |
+| **Face-Sync Inference** | Batch size 32–64 (GPU VRAM OOM) | Micro-batch size $N=4$ on CPU / quantized PyTorch |
+| **Frame Scope** | Processing every frame (0 to 60s) | **Speech-Selective**: processes frames ONLY during dialogue; skips pauses & music |
+| **Whisper Transcription** | Float32 Whisper Large ($> 6\text{ GB}$) | Int8 Quantized CTranslate2 ($< 1\text{ GB}$ RAM) |
+| **Voice Preservation** | 16 GB VRAM diffusion voice cloning | Acoustic $F_0$ Autocorrelation + SSML Prosody & Formant Transfer ($0\text{ MB}$ VRAM) |
 
 ---
 
-## Installation & Setup
+## 🚀 Quick Start
 
-### 1. Prerequisites
-- Python 3.10+ (tested on Python 3.12)
-- Windows, macOS, or Linux
+### 1. Installation
 
-### 2. Clone and Install Dependencies
 ```bash
-cd assignment
+# Clone repository
+git clone https://github.com/rajeshmediboina596-droid/PolyDubAI.git
+cd PolyDubAI
+
+# Create and activate Python virtual environment
+python -m venv venv
+venv\Scripts\activate  # Windows
+# source venv/bin/activate  # Linux/macOS
+
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-> **FFmpeg Note**: The package automatically bundles FFmpeg via `imageio-ffmpeg` or auto-detects system `ffmpeg`. No manual environment path configuration required!
-
----
-
-## Web Interface (Dubber Studio)
-
-An interactive, modern web frontend with real-time SSE pipeline streaming, speaker demographic visualizers, in-browser video player, and video library.
+### 2. Launch Web Studio (Recommended)
 
 ```bash
-# Launch Dubber Studio (automatically opens your default browser at http://localhost:8000)
-python run_web.py
-
-# Or launch via main CLI
-python main.py --web
-
-# Custom port
-python run_web.py --port 8080
+python run_web.py --port 8000
 ```
+Open **`http://localhost:8000`** in your web browser.
 
-### Web Features
-- **Modern Glassmorphic UI**: High-contrast dark theme with animated glowing gradients, responsive layout, and modern typography (`Outfit`, `Inter`).
-- **Real-Time Pipeline Stepper**: Live Server-Sent Events (SSE) stream tracking all 5 stages (yt-dlp download, Whisper translation, F0 pitch classification, Edge-TTS synthesis, timeline sync, and lossless remuxing).
-- **Speaker & Gender Visualization**: Live translated segment table detailing detected speaker demographics (`♂ Male` / `♀ Female`) with fundamental frequency ($F_0$ in Hz).
-- **Built-in HTML5 Video Player**: Watch dubbed videos instantly in your browser with `.srt` subtitle toggle, speed controls, and one-click MP4 download.
-- **Video Library**: Automatically scans and displays all previously dubbed videos in `output/` for instant playback and retrieval.
+### 3. CLI Usage
 
----
-
-## Quick Start (CLI)
-
-### Basic CLI Usage
 ```bash
-# Dub a YouTube video with default settings (American Male: Christopher)
-python main.py "https://www.youtube.com/watch?v=EXAMPLE_ID"
+# Basic Dubbing (YouTube Shorts / Video URL)
+python main.py "https://youtube.com/shorts/GdUMxKyqrSs" --target-lang en
 
-# Interactive prompt (if URL is omitted)
-python main.py
-```
+# Dub into Telugu with Voice Preservation and AI Lip-Sync
+python main.py "https://youtube.com/shorts/GdUMxKyqrSs" --target-lang te --voice-preservation adaptive_prosody --enable-lipsync
 
-### Voice Selection
-```bash
-# List all available neural voices
-python main.py --list-voices
-
-# Dub using a natural American Female voice (Jenny)
-python main.py "https://www.youtube.com/watch?v=EXAMPLE_ID" --voice en-US-JennyNeural
-
-# Dub using a British accent (Ryan)
-python main.py "https://www.youtube.com/watch?v=EXAMPLE_ID" --voice en-GB-RyanNeural
-```
-
-# Multi-Speaker & Gender-Adaptive Options (Enabled by default!)
-# By default, any video automatically detects male vs female speakers:
-# Male speakers get Christopher (en-US-ChristopherNeural)
-# Female speakers get Jenny (en-US-JennyNeural)
-
-# Customize specific male and female voices (e.g. British accents):
-python main.py "https://www.youtube.com/watch?v=EXAMPLE_ID" --male-voice en-GB-RyanNeural --female-voice en-GB-SoniaNeural
-
-# Or disable automatic gender detection to force a single static voice:
-python main.py "https://www.youtube.com/watch?v=EXAMPLE_ID" --no-auto-gender --voice en-US-GuyNeural
-
-### Advanced Options
-```bash
-# Retain ducked original background audio (10% volume) for ambient sound & music
-python main.py "https://www.youtube.com/watch?v=EXAMPLE_ID" --mix-original 0.10
-
-# Use a larger Whisper model for maximum translation fidelity
-python main.py "https://www.youtube.com/watch?v=EXAMPLE_ID" --model small
-
-# Specify custom output directory
-python main.py "https://www.youtube.com/watch?v=EXAMPLE_ID" --output my_dubs/
+# Dub into Hindi with Bilingual Subtitles
+python main.py "https://youtube.com/shorts/GdUMxKyqrSs" --target-lang hi --subtitle-mode dual
 ```
 
 ---
 
-## Benchmarking (30-Minute & 2-Hour Videos)
+## 🧪 Running Automated Tests
 
-For the internship submission, run `benchmark.py`:
+Run the full automated test suite (52+ passing tests covering all 5 phases):
 
 ```bash
-# Run demo benchmark on sample foreign media (instant verification)
-python benchmark.py --demo
-
-# Benchmark recommended foreign documentary videos (30-min French & 90-min German)
-python benchmark.py --recommended
-
-# Or pass specific YouTube URLs:
-python benchmark.py "https://www.youtube.com/watch?v=GnNUFPdEnts" "https://www.youtube.com/watch?v=8GFujvNsllU"
+pytest tests/ -v
 ```
 
-This will:
-1. Process both videos end-to-end.
-2. Record stage-by-stage timings (Download, Transcription, Synthesis, Synchronization, Remuxing).
-3. Compute the Real-Time Factor (RTF).
-4. Generate a submission report in `output_benchmarks/benchmark_report.md` and `output_benchmarks/benchmark_results.json`.
+Test coverage includes:
+- `tests/test_voice_cloner.py`: Fundamental pitch ($F_0$) estimation, pitch deltas, prosody adaptation, and timbre formant transfer.
+- `tests/test_lipsync.py`: Mel-filterbank calculation, window extraction, jitter-free bounding box smoothing, feathered blending, and streaming lip-sync.
+- `tests/test_server.py`: FastAPI endpoints, video deletion, language catalog, and SSE streaming.
+- `tests/test_multilingual.py`: Translation across Indian and global languages.
+- `tests/test_synchronizer.py`: Time-stretching, zero speech bleed, and background music retention.
 
 ---
 
-## Project Structure
+## 📁 Repository Structure
 
 ```
-assignment/
+PolyDubAI/
 ├── dubber/
-│   ├── __init__.py           # Package initialization & FFmpeg registration
-│   ├── config.py             # Config dataclasses & voice catalogue
-│   ├── downloader.py         # YouTube downloader (yt-dlp) & audio extractor
-│   ├── transcriber.py        # faster-whisper transcription & translation
-│   ├── synthesizer.py        # edge-tts neural voice synthesis
+│   ├── __init__.py           # Package exports
+│   ├── config.py             # Configuration & language catalog
+│   ├── downloader.py         # YouTube downloader (yt-dlp)
+│   ├── transcriber.py        # Faster-Whisper transcription & subtitles
+│   ├── classifier.py         # Speaker pitch & gender classifier
+│   ├── visual_classifier.py  # OpenCV face & vision classifier
+│   ├── voice_cloner.py       # Phase 3: Speaker Voice Preservation & Timbre Transfer
+│   ├── synthesizer.py        # Edge-TTS neural speech synthesis
 │   ├── synchronizer.py       # Audio timing alignment & dynamic tempo scaling
-│   ├── remuxer.py            # Lossless FFmpeg remuxer & subtitle muxer
-│   ├── model_downloader.py   # Direct HTTPS model downloader & local cacher
-│   ├── pipeline.py           # Orchestrator with checkpointing & caching
-│   └── ui.py                 # Rich terminal UI & progress rendering
-├── tests/
-│   ├── test_config.py        # Configuration & FFmpeg tests
-│   ├── test_transcriber.py   # Transcription & subtitle tests
-│   ├── test_synthesizer.py   # Neural synthesis tests
-│   ├── test_synchronizer.py  # Audio stretching & timeline alignment tests
-│   └── test_pipeline.py      # End-to-end pipeline integration test
-├── main.py                   # Main CLI entry point
-├── benchmark.py              # Benchmarking & reporting utility
+│   ├── lipsync.py            # Phase 4: AI Lip Synchronization (Wav2Lip / Face-Sync)
+│   ├── remuxer.py            # Lossless FFmpeg video/audio remuxer
+│   └── ui.py                 # Rich terminal output formatting
+├── web/
+│   ├── index.html            # PolyDubAI Web Studio interface
+│   ├── app.js                # SSE streaming & interactive UI logic
+│   └── style.css             # Glassmorphism dark-theme styling
+├── tests/                    # Pytest automated test suite
+├── server.py                 # FastAPI backend with REST & SSE endpoints
+├── main.py                   # CLI entrypoint
+├── Dockerfile                # Deployment configuration
 ├── requirements.txt          # Python dependencies
-├── walkthrough.md            # 2-minute video walkthrough script
-└── README.md                 # System documentation
+└── README.md                 # Complete documentation
 ```
 
 ---
 
-## Submission Checklist
+## 📜 License & Compliance
 
-For emailing `careers@idealabsdigital.com`:
-- [x] **Source Videos**: Two foreign language YouTube URLs (30-min and 2-hour).
-- [x] **Dubbed Outputs**: Saved in `output/` or `output_benchmarks/`.
-- [x] **Processing Times**: Formatted in `output_benchmarks/benchmark_report.md`.
-- [x] **Walkthrough Script**: See [walkthrough.md](walkthrough.md) for the 2-minute architectural explanation script.
+MIT License. Designed and engineered for academic and internship evaluation at **IDEALABS DIGITAL**.

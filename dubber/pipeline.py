@@ -16,6 +16,8 @@ from .synthesizer import SpeechSynthesizer, get_media_duration
 from .synchronizer import AudioSynchronizer
 from .remuxer import VideoRemuxer
 from .classifier import SpeakerGenderClassifier
+from .voice_cloner import SpeakerVoicePreserver
+from .lipsync import AILipSynchronizer
 from .ui import (
     console,
     print_banner,
@@ -34,6 +36,11 @@ class DubbingPipeline:
     def __init__(self, config: Optional[DubbingConfig] = None):
         self.config = config or DubbingConfig()
         self.classifier = SpeakerGenderClassifier()
+        self.voice_preserver = SpeakerVoicePreserver(ffmpeg_path=self.config.ffmpeg_path)
+        self.lipsynchronizer = AILipSynchronizer(
+            ffmpeg_path=self.config.ffmpeg_path,
+            batch_size=getattr(self.config, "lipsync_batch_size", 4),
+        )
         self.downloader = YouTubeDownloader(
             temp_dir=self.config.temp_dir,
             ffmpeg_path=self.config.ffmpeg_path,
@@ -258,6 +265,29 @@ class DubbingPipeline:
         if not segments:
             raise RuntimeError("No speech segments detected in the video audio track.")
 
+        # Step 2.8: Speaker Voice Preservation & Acoustic Profiling (Phase 3)
+        if getattr(self.config, "enable_voice_preservation", True) and getattr(self.config, "voice_preservation_mode", "adaptive_prosody") != "none":
+            console.print("[cyan]🎙️ Speaker Voice Preservation: Profiling pitch, cadence & tone from source speaker...[/cyan]")
+            if event_callback:
+                event_callback({
+                    "stage": 2.8,
+                    "status": "running",
+                    "title": "Speaker Voice Preservation: Profiling Pitch, Cadence & Timbre",
+                })
+            segments = self.voice_preserver.preserve_voices_for_segments(
+                segments=segments,
+                source_audio_path=audio_path,
+                target_lang=target_lang,
+                mode=getattr(self.config, "voice_preservation_mode", "adaptive_prosody"),
+            )
+            sample_seg = segments[0] if segments else {}
+            vp = sample_seg.get("voice_profile", {})
+            pitch_shift = sample_seg.get("pitch", "+0Hz")
+            rate_shift = sample_seg.get("rate", "+0%")
+            console.print(
+                f"[green]✓ Voice Preservation Active: F0 Pitch {vp.get('median_f0', 120)}Hz (Modulation: {pitch_shift}, Rate: {rate_shift})[/green]"
+            )
+
         # Step 3: Synthesize Speech
         voice_label = (
             f"Adaptive (♂ {male_voice.split('-')[-1]} / ♀ {female_voice.split('-')[-1]})"
@@ -331,8 +361,43 @@ class DubbingPipeline:
         if event_callback:
             event_callback({"stage": 4, "status": "done", "elapsed": sync_time})
 
+        # Step 4.5: AI Lip Synchronization (Phase 4)
+        active_video_path = video_path
+        lipsync_stats = None
+        if getattr(self.config, "enable_lipsync", True):
+            print_step(5, 6, "AI Lip Synchronization: Synchronizing Mouth Movements with Translated Speech")
+            t_lip = time.time()
+            if event_callback:
+                event_callback({
+                    "stage": 4.5,
+                    "status": "running",
+                    "title": "AI Lip Synchronization: Synchronizing Mouth with Translated Audio",
+                })
+            lipsynced_video_path = os.path.join(self.config.temp_dir, f"{video_id}_lipsynced.mp4")
+
+            def lipsync_callback(d: Dict[str, Any]):
+                if event_callback:
+                    event_callback(d)
+
+            try:
+                lipsync_stats = self.lipsynchronizer.synchronize_video_lips(
+                    video_path=video_path,
+                    audio_path=synced_audio_path,
+                    segments=segments,
+                    output_path=lipsynced_video_path,
+                    progress_callback=lipsync_callback,
+                )
+                if os.path.isfile(lipsynced_video_path) and os.path.getsize(lipsynced_video_path) > 1000:
+                    active_video_path = lipsynced_video_path
+                    console.print(
+                        f"[green]✓ AI Lip Synchronization Complete: {lipsync_stats.get('synced_frames', 0)} speech frames synced, "
+                        f"{lipsync_stats.get('skipped_frames', 0)} non-speech frames passed through in {lipsync_stats.get('elapsed', 0)}s[/green]"
+                    )
+            except Exception as e:
+                console.print(f"[yellow]⚠ Lip-sync warning: {e}. Falling back to original video.[/yellow]")
+
         # Step 5: Remux Video
-        print_step(5, 5, "Remuxing Final Video Losslessly with FFmpeg")
+        print_step(6, 6, "Remuxing Final Video Losslessly with FFmpeg")
         t0 = time.time()
         if event_callback:
             event_callback({"stage": 5, "status": "running", "title": "Remuxing Final Video Losslessly with FFmpeg"})
@@ -355,7 +420,7 @@ class DubbingPipeline:
             burn_subs = False
 
         remux_res = self.remuxer.remux(
-            video_path=video_path,
+            video_path=active_video_path,
             audio_path=synced_audio_path,
             output_path=final_video_path,
             subtitle_path=sub_to_embed,
@@ -394,6 +459,9 @@ class DubbingPipeline:
             "output_video": final_video_path,
             "subtitles_file": srt_path,
             "file_size_mb": remux_res.get("file_size_mb", 0),
+            "voice_preservation": getattr(self.config, "voice_preservation_mode", "adaptive_prosody"),
+            "lipsync_enabled": getattr(self.config, "enable_lipsync", True),
+            "lipsync_stats": lipsync_stats,
         }
 
         print_summary(summary_data)

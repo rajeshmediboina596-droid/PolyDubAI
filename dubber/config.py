@@ -553,8 +553,15 @@ class DubbingConfig:
     voice_pitch: str = "+0Hz"
     voice_volume: str = "+0%"
 
-    # Timing Synchronization & Lip Sync
+    # Speaker Voice Preservation & Conversion (Phase 3)
+    voice_preservation_mode: str = "adaptive_prosody"  # 'adaptive_prosody', 'formant_transfer', 'none'
+    enable_voice_preservation: bool = True
+
+    # Timing Synchronization & AI Lip Sync (Phase 4)
     lip_sync_mode: str = "visual_adaptive"  # 'visual_adaptive', 'strict_lock', 'natural'
+    enable_lipsync: bool = True             # Run AI Lip Synchronization on speaking faces
+    lipsync_model: str = "wav2lip"          # 'wav2lip', 'phoneme_morphing', 'visual_adaptive'
+    lipsync_batch_size: int = 4             # Optimized for 8 GB RAM laptops
     max_stretch_factor: float = 2.20  # Max speech speed-up (up to 2.2x via chained atempo)
     min_stretch_factor: float = 0.85  # Max speech slow-down (15%)
     min_silence_gap: float = 0.05     # Minimum silence gap between segments

@@ -70,6 +70,10 @@ class DubRequest(BaseModel):
     embed_subtitles: bool = Field(True, description="Whether to embed subtitles into the MP4 container")
     subtitle_mode: str = Field("soft", description="Subtitle mode: soft, burn, dual, none")
     lip_sync_mode: str = Field("visual_adaptive", description="Lip sync mode: visual_adaptive, strict_lock, natural")
+    enable_voice_preservation: bool = Field(True, description="Preserve original speaker vocal pitch, tone, and cadence")
+    voice_preservation_mode: str = Field("adaptive_prosody", description="Voice preservation mode: adaptive_prosody, formant_transfer, none")
+    enable_lipsync: bool = Field(True, description="Enable AI Lip Synchronization")
+    lipsync_model: str = Field("wav2lip", description="Lip sync model: wav2lip, visual_adaptive")
     proofread_mode: bool = Field(False, description="Whether to pause for interactive script proofreading")
 
 
@@ -390,6 +394,10 @@ async def start_dubbing(req: DubRequest, request: Request):
                 embed_subtitles=req.embed_subtitles,
                 subtitle_mode=req.subtitle_mode,
                 lip_sync_mode=req.lip_sync_mode,
+                voice_preservation_mode=req.voice_preservation_mode,
+                enable_voice_preservation=req.enable_voice_preservation,
+                enable_lipsync=req.enable_lipsync,
+                lipsync_model=req.lipsync_model,
                 proofread_mode=req.proofread_mode,
                 keep_temp=False,
             )

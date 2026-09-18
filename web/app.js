@@ -762,6 +762,10 @@ document.addEventListener('DOMContentLoaded', () => {
       embed_subtitles: embedSubtitlesToggle.checked,
       subtitle_mode: subtitleModeSelect ? subtitleModeSelect.value : 'soft',
       lip_sync_mode: lipSyncModeSelect ? lipSyncModeSelect.value : 'visual_adaptive',
+      enable_voice_preservation: document.getElementById('voicePreserveToggle')?.checked ?? true,
+      voice_preservation_mode: document.getElementById('voicePreserveModeSelect')?.value || 'adaptive_prosody',
+      enable_lipsync: document.getElementById('lipsyncToggle')?.checked ?? true,
+      lipsync_model: document.getElementById('lipsyncModelSelect')?.value || 'wav2lip',
     };
 
     try {
@@ -877,15 +881,20 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    // Stage 2.8: Speaker Voice Preservation
+    else if (stage === 2.8) {
+      updateStepCard(3, 'running', 20, '20%', 'Profiling speaker pitch (F0) & tone...');
+    }
+
     // Stage 3: Synthesizing Speech
     else if (stage === 3) {
       if (status === 'running') {
-        updateStepCard(3, 'running', 10, '10%', 'Initializing Edge TTS...');
+        updateStepCard(3, 'running', 25, '25%', 'Voice-Preserved Neural Speech...');
       } else if (status === 'synthesizing') {
         const pct = evt.percent || 0;
-        updateStepCard(3, 'running', pct, `${pct}%`, `Synthesized ${evt.completed || 0} / ${evt.total || 0}`);
+        updateStepCard(3, 'running', pct, `${pct}%`, `Synthesizing ${evt.completed || 0} / ${evt.total || 0}`);
       } else if (status === 'done') {
-        updateStepCard(3, 'done', 100, '100%', `Completed in ${evt.elapsed || 0}s`);
+        updateStepCard(3, 'done', 100, '100%', `Voice Preserved (${evt.elapsed || 0}s)`);
       }
     }
 
@@ -897,7 +906,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const pct = evt.percent || 0;
         updateStepCard(4, 'running', pct, `${pct}%`, `Aligned ${evt.completed || 0} / ${evt.total || 0}`);
       } else if (status === 'done') {
-        updateStepCard(4, 'done', 100, '100%', `Zero drift assembled (${evt.elapsed || 0}s)`);
+        updateStepCard(4, 'running', 60, '60%', `Audio Aligned (${evt.elapsed || 0}s)`);
+      }
+    }
+
+    // Stage 4.5: AI Lip Synchronization (Wav2Lip)
+    else if (stage === 4.5) {
+      if (status === 'running') {
+        updateStepCard(4, 'running', 40, '40%', 'Wav2Lip AI analyzing speech frames...');
+      } else if (status === 'lip_syncing') {
+        const pct = evt.percent || 50;
+        updateStepCard(4, 'running', pct, `${pct}%`, `Lip-Sync: ${evt.synced_frames || 0} frames`);
       }
     }
 
@@ -1281,6 +1300,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (metricSegments) metricSegments.textContent = `${summary.speech_segments || 0} segments`;
     if (metricTotalTime) metricTotalTime.textContent = `${summary.total_time || 0}s`;
+    const metricVoicePreserve = document.getElementById('metricVoicePreserve');
+    const metricLipSync = document.getElementById('metricLipSync');
+    if (metricVoicePreserve) {
+      const mode = summary.voice_preservation || 'adaptive_prosody';
+      metricVoicePreserve.textContent = mode !== 'none' ? 'F0 Pitch & Tone Active' : 'Off';
+    }
+    if (metricLipSync) {
+      if (summary.lipsync_enabled) {
+        const stats = summary.lipsync_stats;
+        metricLipSync.textContent = stats ? `Wav2Lip (${stats.synced_frames || 0} frames)` : 'Wav2Lip Synchronized';
+      } else {
+        metricLipSync.textContent = 'Audio Timed';
+      }
+    }
     if (metricEfficiency) {
       const rtf = summary.rtf ? `${summary.rtf}x` : '< 1.0x';
       metricEfficiency.textContent = `${rtf} Real-Time Factor`;

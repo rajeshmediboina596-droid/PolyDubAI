@@ -92,19 +92,25 @@ class SpeechSynthesizer:
         text: str,
         output_path: str,
         voice: Optional[str] = None,
+        rate: Optional[str] = None,
+        pitch: Optional[str] = None,
+        volume: Optional[str] = None,
         retries: int = 3,
     ) -> float:
         """Synthesize a single text string to an audio file with retry logic and offline SAPI fallback."""
         v = voice or self.voice
+        r = rate or self.rate
+        p = pitch or self.pitch
+        vol = volume or self.volume
 
         for attempt in range(retries):
             try:
                 communicate = edge_tts.Communicate(
                     text=text,
                     voice=v,
-                    rate=self.rate,
-                    pitch=self.pitch,
-                    volume=self.volume,
+                    rate=r,
+                    pitch=p,
+                    volume=vol,
                 )
                 await communicate.save(output_path)
                 if os.path.isfile(output_path) and os.path.getsize(output_path) > 0:
@@ -149,9 +155,19 @@ class SpeechSynthesizer:
             out_filepath = os.path.join(output_dir, out_filename)
 
             seg_voice = seg.get("voice") or self.voice
+            seg_rate = seg.get("rate") or self.rate
+            seg_pitch = seg.get("pitch") or self.pitch
+            seg_volume = seg.get("volume") or self.volume
 
             async with semaphore:
-                dur = await self._synthesize_single(text, out_filepath, voice=seg_voice)
+                dur = await self._synthesize_single(
+                    text,
+                    out_filepath,
+                    voice=seg_voice,
+                    rate=seg_rate,
+                    pitch=seg_pitch,
+                    volume=seg_volume,
+                )
 
             seg_copy["voice"] = seg_voice
             seg_copy["audio_path"] = out_filepath

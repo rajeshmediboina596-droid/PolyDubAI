@@ -18,5 +18,14 @@ except Exception:
     pass
 
 from .pipeline import DubbingPipeline
+from .voice_cloner import SpeakerVoicePreserver, AcousticProfile
+from .lipsync import AILipSynchronizer
 
-__all__ = ["DubbingConfig", "DubbingPipeline", "AVAILABLE_VOICES"]
+__all__ = [
+    "DubbingConfig",
+    "DubbingPipeline",
+    "AVAILABLE_VOICES",
+    "SpeakerVoicePreserver",
+    "AcousticProfile",
+    "AILipSynchronizer",
+]
